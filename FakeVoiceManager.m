@@ -71,7 +71,7 @@ void FVLog(NSString *format, ...) {
 // ============================================================================
 // FakeVoiceManager 实现
 // ============================================================================
-@interface FakeVoiceManager () <UIDocumentPickerDelegate, UIDocumentPickerDelegate>
+@interface FakeVoiceManager () <UIDocumentPickerDelegate>
 @property (nonatomic, strong) FakeVoiceFloatButton *floatButton;
 @property (nonatomic, weak) UIWindow *observedWindow;
 @property (nonatomic, copy) NSString *tempVoicePath;

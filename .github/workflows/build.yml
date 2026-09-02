@@ -54,9 +54,9 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           make clean THEOS_PACKAGE_SCHEME=rootless || true
-          make package THEOS_PACKAGE_SCHEME=rootless
+          make package THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee build_rootless.log
           echo "=== rootless artifacts ==="
-          ls -la packages/
+          ls -la packages/ || (echo "BUILD FAILED, last 50 lines:" && tail -50 build_rootless.log && exit 1)
 
       - name: Build rootful package (legacy jailbreak)
         run: |
