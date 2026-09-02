@@ -55,10 +55,23 @@ jobs:
         continue-on-error: true
         run: |
           cd "${{ github.workspace }}"
+          echo "=== DEBUG INFO ==="
+          echo "THEOS=$THEOS"
+          echo "PWD=$(pwd)"
+          echo "which make=$(which make)"
+          echo "make version:"; make --version 2>&1 | head -2
+          echo "SDKs:"; ls -la "$THEOS/sdks/" 2>&1
+          echo "Toolchain:"; ls -la "$THEOS/toolchain/" 2>&1 | head -10
+          echo "=== START BUILD ==="
           make clean THEOS_PACKAGE_SCHEME=rootless || true
           make package THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee build_rootless.log
-          echo "=== exit code: $? ==="
+          echo "=== make exit code: $? ==="
+          echo "=== packages dir ==="
           ls -la packages/ 2>/dev/null || echo "no packages dir"
+          echo "=== obj dir ==="
+          ls -la obj/ 2>/dev/null || echo "no obj dir"
+          echo "=== FULL LOG ==="
+          cat build_rootless.log
 
       - name: Upload build log on failure
         if: always()
