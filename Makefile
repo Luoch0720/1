@@ -10,8 +10,8 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = TelegramVoiceNoteTweak
 
-TelegramVoiceNoteTweak_FILES = Tweak.xm FakeVoiceManager.m
-TelegramVoiceNoteTweak_CFLAGS = -fobjc-arc -I. -Wno-deprecated-declarations -Wno-error -fno-modules
+TelegramVoiceNoteTweak_FILES = Tweak.m FakeVoiceManager.m
+TelegramVoiceNoteTweak_CFLAGS = -fobjc-arc -I. -Wno-deprecated-declarations -Wno-error -fno-modules -fno-implicit-modules -fno-implicit-module-maps
 TelegramVoiceNoteTweak_FRAMEWORKS = UIKit Foundation AVFoundation UniformTypeIdentifiers
 
 include $(THEOS_MAKE_PATH)/tweak.mk
