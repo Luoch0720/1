@@ -23,7 +23,8 @@ jobs:
             build-essential make clang perl \
             git curl rsync python3 \
             libxml2-dev libssl-dev zlib1g-dev \
-            dpkg-dev fakeroot xz-utils lzma
+            dpkg-dev fakeroot xz-utils lzma \
+            libtinfo5 libncurses5
 
       - name: Clone Theos
         run: |
