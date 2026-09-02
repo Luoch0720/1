@@ -51,33 +51,33 @@ jobs:
           ls -la "$THEOS/sdks/"
 
       - name: Build rootless package (Dopamine / modern jailbreak)
+        id: build_rootless
+        continue-on-error: true
         run: |
           cd "${{ github.workspace }}"
           make clean THEOS_PACKAGE_SCHEME=rootless || true
           make package THEOS_PACKAGE_SCHEME=rootless 2>&1 | tee build_rootless.log
-          echo "=== rootless artifacts ==="
-          ls -la packages/ || (echo "BUILD FAILED, last 50 lines:" && tail -50 build_rootless.log && exit 1)
+          echo "=== exit code: $? ==="
+          ls -la packages/ 2>/dev/null || echo "no packages dir"
 
-      - name: Build rootful package (legacy jailbreak)
-        run: |
-          cd "${{ github.workspace }}"
-          make clean || true
-          make package
-          echo "=== rootful artifacts ==="
-          ls -la packages/
-
-      - name: Upload deb artifacts
+      - name: Upload build log on failure
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: TelegramVoiceNoteTweak-debs
-          path: packages/*.deb
-          retention-days: 30
+          name: build-logs
+          path: |
+            build_rootless.log
+            packages/
+          retention-days: 7
 
-      - name: Package info
+      - name: Check build result
         run: |
-          cd "${{ github.workspace }}/packages"
-          for f in *.deb; do
-            echo "=== $f ==="
-            dpkg-deb -I "$f" 2>/dev/null || echo "(cannot read)"
-            echo ""
-          done
+          cd "${{ github.workspace }}"
+          if ls packages/*.deb 1>/dev/null 2>&1; then
+            echo "BUILD SUCCESS"
+            ls -la packages/
+          else
+            echo "BUILD FAILED — last 80 lines of log:"
+            tail -80 build_rootless.log
+            exit 1
+          fi
