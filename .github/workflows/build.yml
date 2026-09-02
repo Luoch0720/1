@@ -32,12 +32,28 @@ jobs:
 
       - name: Install iOS toolchain (clang + ldid)
         run: |
-          cd "$THEOS/toolchain"
+          mkdir -p "$THEOS/toolchain/linux"
+          cd "$THEOS/toolchain/linux"
           curl -fL -o tc.tar.lzma \
             "https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma"
           tar --lzma -xf tc.tar.lzma
           rm tc.tar.lzma
-          ls -la "$THEOS/toolchain"
+          echo "=== Extracted structure ==="
+          ls -la
+          # Theos expects toolchain at $THEOS/toolchain/linux/iphone/
+          # sbingner toolchain extracts to a subdirectory, move it into place
+          if [ -d "linux-ios-arm64e-clang-toolchain" ]; then
+            mv linux-ios-arm64e-clang-toolchain iphone
+          elif [ ! -d "iphone" ]; then
+            # 如果解压后直接是 bin/lib 等目录，创建 iphone 并移入
+            mkdir -p iphone
+            find . -maxdepth 1 -mindepth 1 ! -name iphone -exec mv {} iphone/ \;
+          fi
+          echo "=== Final structure ==="
+          ls -la iphone/
+          echo "=== clang check ==="
+          ls -la iphone/bin/clang 2>&1 || echo "clang not found at iphone/bin/clang"
+          ls -la iphone/bin/ 2>&1 | head -20
 
       - name: Install iOS SDK
         run: |
