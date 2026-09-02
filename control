@@ -1,0 +1,9 @@
+Package: com.user.telegramvoicenotetweak
+Name: TelegramVoiceNoteTweak
+Depends: mobilesubstrate (>= 0.9.5000)
+Version: 0.1.0
+Architecture: iphoneos-arm64
+Description: Send local audio files as Telegram voice notes.
+Maintainer: dev
+Author: dev
+Section: Tweaks

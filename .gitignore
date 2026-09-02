@@ -1,0 +1,26 @@
+# Theos build artifacts
+obj/
+packages/
+.theos/
+*.deb
+*.tar.xz
+*.tar.gz
+
+# Xcode
+*.xcuserstate
+*.xcuserdatad
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp
+*.tmp
+*.bak
