@@ -23,7 +23,7 @@ jobs:
             build-essential make clang perl \
             git curl rsync python3 \
             libxml2-dev libssl-dev zlib1g-dev \
-            dpkg-dev fakeroot
+            dpkg-dev fakeroot xz-utils lzma
 
       - name: Clone Theos
         run: |
@@ -33,10 +33,10 @@ jobs:
       - name: Install iOS toolchain (clang + ldid)
         run: |
           cd "$THEOS/toolchain"
-          curl -fL -o tc.tar.xz \
-            "https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.xz"
-          tar -xf tc.tar.xz
-          rm tc.tar.xz
+          curl -fL -o tc.tar.lzma \
+            "https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma"
+          tar --lzma -xf tc.tar.lzma
+          rm tc.tar.lzma
           ls -la "$THEOS/toolchain"
 
       - name: Install iOS SDK
