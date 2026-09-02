@@ -90,7 +90,14 @@ jobs:
             echo "BUILD SUCCESS"
             ls -la packages/
           else
-            echo "BUILD FAILED — last 80 lines of log:"
-            tail -80 build_rootless.log
+            echo "BUILD FAILED"
+            echo "=== Full log ==="
+            cat build_rootless.log
+            echo ""
+            echo "=== Error lines ==="
+            grep -i -E "error:|fatal:|cannot|not found|No rule|undefined|failed" build_rootless.log | head -20 || true
+            # 输出到 annotation，方便 API 读取
+            ERR=$(grep -i -E "error:|fatal:|cannot|not found|No rule|undefined|failed" build_rootless.log | head -5 | tr '\n' '|')
+            echo "::error::BUILD FAILED: $ERR"
             exit 1
           fi
