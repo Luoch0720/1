@@ -31,33 +31,48 @@ jobs:
           echo "THEOS=$THEOS" >> $GITHUB_ENV
 
       - name: Install iOS toolchain (clang + ldid)
+        continue-on-error: true
         run: |
           mkdir -p "$THEOS/toolchain/linux/iphone"
           cd /tmp
+          echo "=== Downloading toolchain ==="
           curl -fL -o tc.tar.lzma \
             "https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma"
+          echo "Downloaded size: $(ls -la tc.tar.lzma | awk '{print $5}')"
+          echo "=== Extracting ==="
           mkdir -p tc_extract
-          tar --lzma -xf tc.tar.lzma -C tc_extract
-          echo "=== Extracted top-level ==="
+          # 用 lzma 解压再 tar，避免 tar --lzma 兼容问题
+          lzma -d -c tc.tar.lzma | tar -xf - -C tc_extract 2>&1 || tar --lzma -xf tc.tar.lzma -C tc_extract 2>&1
+          echo "=== Top-level structure ==="
           ls -la tc_extract/
-          echo "=== clang found at ==="
-          find tc_extract -name "clang" -type f 2>/dev/null
-          echo "=== bin dirs ==="
-          find tc_extract -maxdepth 4 -name "bin" -type d 2>/dev/null
-          # 找到 clang 所在目录的父目录，复制到 Theos 期望位置
-          CLANG_PATH=$(find tc_extract -name "clang" -type f 2>/dev/null | head -1)
+          echo "=== Full structure (max depth 4) ==="
+          find tc_extract -maxdepth 4 | head -80
+          echo "=== Looking for clang ==="
+          find tc_extract -iname "*clang*" -type f 2>/dev/null | head -20
+          echo "=== Looking for bin dirs ==="
+          find tc_extract -maxdepth 5 -name "bin" -type d 2>/dev/null
+          # 找到任何 clang 可执行文件
+          CLANG_PATH=$(find tc_extract -iname "clang*" -type f -executable 2>/dev/null | grep -v "\.so" | head -1)
+          if [ -z "$CLANG_PATH" ]; then
+            CLANG_PATH=$(find tc_extract -iname "clang" -type f 2>/dev/null | head -1)
+          fi
+          echo "CLANG_PATH=$CLANG_PATH"
           if [ -n "$CLANG_PATH" ]; then
             TOOLCHAIN_BIN=$(dirname "$CLANG_PATH")
             TOOLCHAIN_ROOT=$(dirname "$TOOLCHAIN_BIN")
-            echo "Copying toolchain from $TOOLCHAIN_ROOT to $THEOS/toolchain/linux/iphone/"
-            cp -r "$TOOLCHAIN_ROOT"/* "$THEOS/toolchain/linux/iphone/"
+            echo "TOOLCHAIN_ROOT=$TOOLCHAIN_ROOT"
+            echo "Copying toolchain..."
+            cp -rv "$TOOLCHAIN_ROOT"/* "$THEOS/toolchain/linux/iphone/" 2>&1 | tail -5
           else
-            echo "WARNING: clang not found, listing full structure:"
-            find tc_extract -maxdepth 5 | head -50
+            echo "ERROR: clang not found in extracted toolchain!"
           fi
-          echo "=== Final clang check ==="
-          ls -la "$THEOS/toolchain/linux/iphone/bin/clang" 2>&1
-          "$THEOS/toolchain/linux/iphone/bin/clang" --version 2>&1 | head -3 || true
+          echo "=== Final verification ==="
+          ls -la "$THEOS/toolchain/linux/iphone/bin/" 2>&1 | head -20
+          if [ -x "$THEOS/toolchain/linux/iphone/bin/clang" ]; then
+            "$THEOS/toolchain/linux/iphone/bin/clang" --version 2>&1 | head -3
+          else
+            echo "clang still not at expected path!"
+          fi
 
       - name: Install iOS SDK
         run: |
